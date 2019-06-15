@@ -2,7 +2,7 @@ const FILTER_SMOOTHING = 0.1
 const GAIN_SMOOTHING = 0.01
 
 export default class MixerChannel {
-  constructor ({ duckAmount = 0, highPass = 0, volume = 1 } = {}) {
+  constructor ({ duckAmount = 0, highPass = 0, volume = 1, reverb = 0 } = {}) {
     const ctx = window.audioContext
     this.input = new GainNode(ctx)
     this.output = new GainNode(ctx, { gain: volume })
@@ -14,14 +14,14 @@ export default class MixerChannel {
     this.lowPass = new BiquadFilterNode(ctx, { type: 'lowpass', frequency: 22000 })
     this.highPass = new BiquadFilterNode(ctx, { type: 'highpass', frequency: highPass })
     this.compressor = ctx.createDynamicsCompressor({
-      threshold: -20,
+      threshold: -30,
       ratio: 5,
       attack: 0.01,
       release: 0.25
     })
 
     // sends
-    this.reverbSend = new GainNode(ctx, { gain: 0 })
+    this.reverbSend = new GainNode(ctx, { gain: reverb })
     this.delaySend = new GainNode(ctx, { gain: 0 })
 
     // state

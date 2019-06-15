@@ -57,8 +57,9 @@ function init () {
   ]
 
   // MIDI Channels for Inst + Send from 1
-  const drums = new DrumSampler('drums.wav', 35, 63)
+  const drums = new DrumSampler('drums.wav', 36, 63)
 
+  drums.config(36, { volume: 1.2 })
   drums.config(37, { volume: 0.5 })
   drums.config(39, { volume: 0.7 }) // clap
   drums.config(48, { volume: 0.7 }) // clap
@@ -78,8 +79,8 @@ function init () {
   drums.config(53, { volume: 0.6 })
 
   // hats
-  drums.config(41, { chokeGroup: 'h', volume: 0.5 })
-  drums.config(43, { chokeGroup: 'h', volume: 0.5 })
+  drums.config(41, { chokeGroup: 'h', volume: 0.3 })
+  drums.config(43, { chokeGroup: 'h', volume: 0.3 })
   drums.config(50, { chokeGroup: 'h', volume: 0.5 })
   drums.config(52, { chokeGroup: 'h', volume: 0.3 })
   drums.config(54, { chokeGroup: 'h', volume: 0.5 })
@@ -111,11 +112,11 @@ function init () {
   const leadChannel = new MixerChannel({ duckAmount: 1, highPass: 100 })
   const slicerChannel = new MixerChannel({ duckAmount: 0.8 })
   const oneshotsChannel = new MixerChannel({ duckAmount: 0.8 })
-  const delayChannel = new MixerChannel({ duckAmount: 0.8, highPass: 200, volume: 1.3 })
+  const delayChannel = new MixerChannel({ duckAmount: 1, highPass: 200, volume: 1, reverb: 0.1 })
   const reverbChannel = new MixerChannel({ duckAmount: 0.8, highPass: 100 })
 
   // Connect inst/fx to channel strips
-  const masterOutput = new GainNode(window.audioContext, { gain: 0.5 })
+  const masterOutput = new GainNode(window.audioContext, { gain: 0.8 })
   const limiter = new DynamicsCompressorNode(window.audioContext, {
     threshold: 0,
     knee: 0,

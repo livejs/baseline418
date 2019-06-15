@@ -3,7 +3,7 @@ const AMP_SMOOTHING = 0.01
 const PITCH_SMOOTHING = 0.01
 
 export default class Synth {
-  constructor ({ sub = 1, vibrato = 100 } = {}) {
+  constructor ({ sub = 1, vibrato = 0 } = {}) {
     this.context = window.audioContext
 
     // build exp curve
@@ -52,7 +52,7 @@ export default class Synth {
     this.pitch = new ConstantSourceNode(this.context)
     this.detuneValue = new ConstantSourceNode(this.context)
     this.filterEnvelopeAmount = new GainNode(this.context, { gain: 0.5 })
-    this.vibratoAmount = new GainNode(this.context, { gain: 100 })
+    this.vibratoAmount = new GainNode(this.context, { gain: vibrato })
     this.filterValue = new ConstantSourceNode(this.context, { offset: 0.01 })
     this.filterShaper = new WaveShaperNode(this.context, { curve: expCurve })
     this.filterOffset = new ConstantSourceNode(this.context, { offset: 20 })
@@ -67,6 +67,7 @@ export default class Synth {
     this.noteValue.connect(this.subOsc.detune)
     this.detuneValue.connect(this.sawOsc.detune)
     this.vibratoLfo.connect(this.vibratoAmount).connect(this.pitch.offset)
+    this.pitch.connect(this.noteValue.offset)
     this.filterOffset.connect(this.filter.frequency)
 
     // signal flow
@@ -135,12 +136,17 @@ export default class Synth {
     } else if (control === 13) { // oscillator detune
       this.detuneValue.offset.setTargetAtTime((midiFloat(value) * 2 - 1) * 1200, time, PITCH_SMOOTHING)
     } else if (control === 14) { // vibrato
-      this.vibratoAmount.gain.setTargetAtTime(midiFloat(value) * 100, time, PITCH_SMOOTHING)
+      this.vibratoAmount.gain.setTargetAtTime(midiFloat(value) * 200, time, PITCH_SMOOTHING)
     } else if (control === 15) { // pitch
-      this.pitch.offset.setTargetAtTime((midiFloat(value) * 2 - 1) * 1200, time, PITCH_SMOOTHING)
+
     } else if (control === 16) { // pitch envelope
       // TODO
     }
+  }
+
+  pb (value) {
+    const time = this.context.currentTime
+    this.pitch.offset.setTargetAtTime((value * 2 - 1) * 1200 + 1200, time, PITCH_SMOOTHING)
   }
 
   noteOn (note, velocity) {

@@ -50,6 +50,10 @@ export default class DrumSampler {
 
     const src = this.audioContext.createBufferSource()
     const gain = this.audioContext.createGain()
+    let velocityMultiplier = 1
+    if (velocity <= 100) {
+      velocityMultiplier = 0.6
+    }
     gain.connect(this.vca)
     const buffer = this.samples[note].buffer
     const now = this.audioContext.currentTime
@@ -63,8 +67,8 @@ export default class DrumSampler {
       }
       this.chokeGroups[this.samples[note].chokeGroup] = gain
     }
-    gain.gain.setValueAtTime(this.samples[note].volume, now)
-    gain.gain.setValueAtTime(this.samples[note].volume, now + (buffer.duration - 0.02))
+    gain.gain.setValueAtTime(this.samples[note].volume * velocityMultiplier, now)
+    gain.gain.setValueAtTime(this.samples[note].volume * velocityMultiplier, now + (buffer.duration - 0.02))
     gain.gain.linearRampToValueAtTime(0, now + buffer.duration)
     this.playing[note] = src
     src.start()
