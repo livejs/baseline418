@@ -1,4 +1,4 @@
-const FILTER_SMOOTHING = 0.01
+const FILTER_SMOOTHING = 0.05
 const AMP_SMOOTHING = 0.01
 const PITCH_SMOOTHING = 0.01
 
@@ -16,7 +16,7 @@ export default class Synth {
     console.log(expCurve)
 
     // build drive curve
-    const shaperCurveAmount = 100
+    const shaperCurveAmount = 50
     const driveCurve = new Float32Array(this.context.sampleRate)
     const deg = Math.PI / 180
     for (let i = 0; i < this.context.sampleRate; ++i) {
@@ -35,7 +35,7 @@ export default class Synth {
     // oscillators
     this.squareOsc = new OscillatorNode(this.context, { type: 'square', frequency: 440 })
     this.sawOsc = new OscillatorNode(this.context, { type: 'sawtooth', frequency: 440 })
-    this.subOsc = new OscillatorNode(this.context, { type: 'square', frequency: 220 })
+    this.subOsc = new OscillatorNode(this.context, { type: 'triangle', frequency: 220 })
     this.noise = new AudioBufferSourceNode(this.context, { buffer: noiseBuffer, loop: true })
     this.vibratoLfo = new OscillatorNode(this.context, { type: 'triangle', frequency: 8 })
 
@@ -52,7 +52,7 @@ export default class Synth {
     this.pitch = new ConstantSourceNode(this.context)
     this.detuneValue = new ConstantSourceNode(this.context)
     this.filterEnvelopeAmount = new GainNode(this.context, { gain: 0.5 })
-    this.vibratoAmount = new GainNode(this.context, { gain: vibrato })
+    this.vibratoAmount = new GainNode(this.context, { gain: 100 })
     this.filterValue = new ConstantSourceNode(this.context, { offset: 0.01 })
     this.filterShaper = new WaveShaperNode(this.context, { curve: expCurve })
     this.filterOffset = new ConstantSourceNode(this.context, { offset: 20 })
@@ -74,7 +74,7 @@ export default class Synth {
     this.sawOsc.connect(this.sawAmp).connect(this.filter)
     this.subOsc.connect(this.subAmp).connect(this.filter)
     this.noise.connect(this.noiseAmp).connect(this.filter)
-    this.filter.connect(new GainNode(this.context, { gain: 0.2 })).connect(this.drive).connect(this.vca)
+    this.filter.connect(new GainNode(this.context, { gain: 0.1 })).connect(this.drive).connect(this.vca)
     // this.filter.connect(this.vca)
 
     // oscillator start
@@ -116,18 +116,18 @@ export default class Synth {
     } else if (control === 4) { // release
       this.releaseDuration = exp(midiFloat(value)) * 4
     } else if (control === 5) { // portamento
-      this.glideDuration = exp(midiFloat(value)) * 3
+      this.glideDuration = exp(midiFloat(value)) * 2
     } else if (control === 6) { // cutoff
-      this.filterValue.offset.setTargetAtTime(midiFloat(value), time, FILTER_SMOOTHING)
+      this.filterValue.offset.setTargetAtTime(exp(midiFloat(value)), time, FILTER_SMOOTHING)
     } else if (control === 7) { // resonance
-      this.filter.Q.setTargetAtTime(exp(midiFloat(value)) * 10, time, FILTER_SMOOTHING)
+      this.filter.Q.setTargetAtTime(exp(midiFloat(value)) * 20, time, FILTER_SMOOTHING)
     } else if (control === 8) { // filter envelope
-      this.filterEnvelopeAmount.gain.setTargetAtTime(midiFloat(value) * 2 - 1, time, FILTER_SMOOTHING)
+      this.filterEnvelopeAmount.gain.setTargetAtTime(exp(midiFloat(value) * 2 - 1), time, FILTER_SMOOTHING)
     } else if (control === 9) { // square <-|-> saw
       this.squareAmp.gain.setTargetAtTime(exp(1 - midiFloat(value)), time, AMP_SMOOTHING)
       this.sawAmp.gain.setTargetAtTime(exp(midiFloat(value)), time, AMP_SMOOTHING)
     } else if (control === 10) { // sub
-      this.subAmp.gain.setTargetAtTime(exp(midiFloat(value)), time, AMP_SMOOTHING)
+      this.subAmp.gain.setTargetAtTime(exp(midiFloat(value) * 1.5), time, AMP_SMOOTHING)
     } else if (control === 11) { // noise
       this.noiseAmp.gain.setTargetAtTime(exp(midiFloat(value)), time, AMP_SMOOTHING)
     } else if (control === 12) { // amp envelope amount
@@ -135,7 +135,7 @@ export default class Synth {
     } else if (control === 13) { // oscillator detune
       this.detuneValue.offset.setTargetAtTime((midiFloat(value) * 2 - 1) * 1200, time, PITCH_SMOOTHING)
     } else if (control === 14) { // vibrato
-      this.vibratoAmount.offset.setTargetAtTime(midiFloat(value) * 100, time, PITCH_SMOOTHING)
+      this.vibratoAmount.gain.setTargetAtTime(midiFloat(value) * 100, time, PITCH_SMOOTHING)
     } else if (control === 15) { // pitch
       this.pitch.offset.setTargetAtTime((midiFloat(value) * 2 - 1) * 1200, time, PITCH_SMOOTHING)
     } else if (control === 16) { // pitch envelope
@@ -150,12 +150,13 @@ export default class Synth {
   }
 
   noteOff (note) {
+    let last = this.noteStack[this.noteStack.length - 1]
     removeAllFrom(note, this.noteStack)
     console.log(note, this.noteStack)
-    if (this.noteStack.length) {
+    if (this.noteStack.length && last === note) {
       this._triggerAttack()
       this._setNote(this.noteStack[this.noteStack.length - 1])
-    } else {
+    } else if (!this.noteStack.length) {
       this._triggerRelease()
     }
   }
@@ -171,21 +172,18 @@ export default class Synth {
 
   _triggerAttack () {
     const time = this.context.currentTime
-    this.vca.gain.cancelAndHoldAtTime(time)
     this.vca.gain.setTargetAtTime(1, window.audioContext.currentTime, 0.01)
 
-    this.envelope.offset.cancelAndHoldAtTime(time)
     this.envelope.offset.linearRampToValueAtTime(1, time + this.attackDuration)
-    this.envelope.offset.exponentialRampToValueAtTime(Math.max(0.0001, this.sustain), time + this.attackDuration + this.decayDuration)
+    this.envelope.offset.setTargetAtTime(Math.max(0.0001, this.sustain), time + this.attackDuration, this.decayDuration / 8)
   }
 
   _triggerRelease () {
     const time = this.context.currentTime
-    this.envelope.offset.cancelAndHoldAtTime(time)
-    this.vca.gain.cancelAndHoldAtTime(time)
+    this.vca.gain.cancelScheduledValues(time)
 
-    this.envelope.offset.linearRampToValueAtTime(0.0001, time + this.releaseDuration)
-    this.vca.gain.linearRampToValueAtTime(0.0001, time + this.releaseDuration)
+    this.envelope.offset.setTargetAtTime(0.0001, time, this.releaseDuration / 8)
+    this.vca.gain.setTargetAtTime(0.0001, time, this.releaseDuration / 8)
   }
 
   _setNote (note) {

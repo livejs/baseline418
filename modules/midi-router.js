@@ -47,7 +47,6 @@ export default class MidiRouter {
     const data = event.data
     if (this.useClock && data.length === 1) {
       if (data[0] === 0xF8) {
-        console.log('clk')
         this.channelHandlers.forEach((handler) => {
           if (handler && typeof handler.clock === 'function') {
             handler.clock(event.timeStamp)
@@ -68,7 +67,7 @@ export default class MidiRouter {
       const command = data[0] & 0xF0
 
       if (command === 144) {
-        console.log('N-O')
+        console.log('trigger', channel, data[1], data[2])
         // handle noteon
         // Specific Quack Handling
         if (channel === QUACK_CHANNEL && data[1] === QUACK_NOTE) {

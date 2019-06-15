@@ -13,6 +13,7 @@ export default class Slicer {
     this.detuneAmount = 0
     this.position = 0
     this.lastPosition = 0
+    this.length = 0
     this.playing = false
     this.envelope = null
     this.player = null
@@ -21,7 +22,7 @@ export default class Slicer {
   clock () {
     if (this.buffer) {
       const ctx = window.audioContext
-      if (this.playing) {
+      if (this.playing && this.length < this.ticks / this.sliceCount) {
         const quantizedPosition = this.position % this.tickQuantize
         // const distance = Math.abs(this.position - this.lastPosition)
 
@@ -44,6 +45,7 @@ export default class Slicer {
       }
     }
     this.position = (this.position + 1) % this.ticks
+    this.length += 1
   }
 
   noteOn (noteId, velocity) {
@@ -51,8 +53,9 @@ export default class Slicer {
       let sliceIndex = noteId - this.startNote
       let sliceLength = this.ticks / this.sliceCount
       this.position = Math.floor(sliceLength * sliceIndex)
-
+      this.length = 0
       this.playing = true
+      this.clock()
     } else {
       this.playing = false
     }

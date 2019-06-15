@@ -1,24 +1,27 @@
 
 ```
-________   ________      _____  .__               __
-\______ \  \_____  \    /     \ |__| ____ _____ _/  |_  ___________
- |    |  \  /   |   \  /  \ /  \|  |/    \\__  \\   __\/  _ \_  __ \
- |    `   \/    |    \/    Y    \  |   |  \/ __ \|  | (  <_> )  | \/
-/_______  /\_______  /\____|__  /__|___|  (____  /__|  \____/|__|
-        \/         \/         \/        \/     \/
+██████╗  █████╗ ███████╗███████╗██╗     ██╗███╗   ██╗███████╗ ██╗  ██╗ ██╗ █████╗ 
+██╔══██╗██╔══██╗██╔════╝██╔════╝██║     ██║████╗  ██║██╔════╝ ██║  ██║███║██╔══██╗
+██████╔╝███████║███████╗█████╗  ██║     ██║██╔██╗ ██║█████╗   ███████║╚██║╚█████╔╝
+██╔══██╗██╔══██║╚════██║██╔══╝  ██║     ██║██║╚██╗██║██╔══╝   ╚════██║ ██║██╔══██╗
+██████╔╝██║  ██║███████║███████╗███████╗██║██║ ╚████║███████╗      ██║ ██║╚█████╔╝
+╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝      ╚═╝ ╚═╝ ╚════╝
 ```
 
-https://www.youtube.com/watch?v=tgf2W3dmglo
+MIDI DRIVEN SYNTH RIG IN YOUR BROWSER
 
-An MIDI driven audio engine written specifically for the JSConf.eu 2019 opening
+- originally written for [JSConfEu 2019 Festival X Opening](https://youtu.be/o1rzsna263c?t=1222) ([DOMinator](https://github.com/livejs/DOMinator))
 
-Written by Matt McKegg (@mckegg) & Jan Krutisch (@halfbyte)
+Written by Matt McKegg (@mmckegg) & Jan Krutisch (@halfbyte)
+
+<img width=100 src='teapot.png'/>
 
 ## Install / Use
 
 - use git-lfs to check out the samples
 - run npm i to install the webserver
-- use sequencer to play back track (we'll try to uh make this more useful)
+- trigger stuff with midi! (yes, that easy. OR NOT)
+- probably change the code to make it work with your midi setup
 
 ## Structure
 

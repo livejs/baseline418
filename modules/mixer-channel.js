@@ -56,9 +56,9 @@ export default class MixerChannel {
     } else if (id === 4) { // DUAL FILTER
       if (value > 64) {
         this.lowPass.frequency.setTargetAtTime(20000, time, FILTER_SMOOTHING)
-        this.highPass.frequency.setTargetAtTime(exp(midiFloat(value, 64, 127)) * 20000 + 20, time, FILTER_SMOOTHING)
+        this.highPass.frequency.setTargetAtTime(cubic(midiFloat(value, 64, 127)) * 20000 + 20, time, FILTER_SMOOTHING)
       } else if (value < 63) {
-        this.lowPass.frequency.setTargetAtTime(exp(midiFloat(value, 0, 63)) * 20000 + 20, time, FILTER_SMOOTHING)
+        this.lowPass.frequency.setTargetAtTime(cubic(midiFloat(value, 0, 63)) * 20000 + 20, time, FILTER_SMOOTHING)
         this.highPass.frequency.setTargetAtTime(20, time, 0.1)
       } else {
         this.lowPass.frequency.setTargetAtTime(20000, time, 0.1)

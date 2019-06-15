@@ -10,16 +10,22 @@ import ReverbFX from './modules/reverb-fx.js'
 const BEAT_TICKS = 24
 
 window.audioContext = new AudioContext()
-console.log("I'M THE ONE AND ONLY DOMINATOR")
+console.log('ENGAGE!')
 
-document.getElementById('start').addEventListener('click', (ev) => {
+let startButton = document.getElementById('start')
+
+startButton.addEventListener('click', (ev) => {
   window.audioContext.resume()
   ev.target.disabled = true
-  ev.target.innerText = 'BREEEEOOOOOMMM'
+  ev.target.innerText = 'Started!'
   window.setTimeout(() => {
     ev.target.hidden = true
   }, 300)
 })
+
+if (window.audioContext.state === 'running') {
+  startButton.hidden = true
+}
 
 var clockDisplay = document.getElementById('clock')
 var cueDisplay = document.getElementById('cueDisplay')
@@ -43,11 +49,11 @@ var ui = {
 function init () {
   // TODO: configure correct midi device
   var midiInputs = [
-    new MidiRouter(/DOMinator/, { useClock: true }), // sequencer (mac)
-    new MidiRouter(/loopMIDI/, { useClock: true }), // sequencer (windows)
-    new MidiRouter(/LD Output/), // Loop Drop (Matt)
-    new MidiRouter(/AudioBox/), // Improjam (Jan)
-    new MidiRouter(/Midi Through Port-0/, { useClock: true }) // Improjam (Jan local)
+    // new MidiRouter(/DOMinator/, { useClock: true }), // sequencer (mac)
+    // new MidiRouter(/loopMIDI/, { useClock: true }), // sequencer (windows)
+    new MidiRouter(/LD Output/, { useClock: true }) // Loop Drop (Matt)
+    // new MidiRouter(/UM-ONE/), // Improjam (Jan)
+    // new MidiRouter(/Midi Through Port-0/, { useClock: true }) // Improjam (Jan local)
   ]
 
   // MIDI Channels for Inst + Send from 1
@@ -82,12 +88,12 @@ function init () {
   const bass = new Synth()
   const lead = new Synth()
   const slicer = new Slicer({
-    ticks: 48 * BEAT_TICKS * 4,
-    sliceCount: 48 * 2,
-    startNote: 30
+    ticks: 42 * BEAT_TICKS * 4,
+    sliceCount: 42 * 4,
+    startNote: 0
   })
 
-  const oneshots = new DrumSampler('oneshot.wav', 36, 45)
+  const oneshots = new DrumSampler('oneshot.wav', 39, 43)
   oneshots.config(36, { chokeGroup: 'p', volume: 1.5 })
   oneshots.config(37, { chokeGroup: 'p', volume: 0.5 })
   oneshots.config(39, { chokeGroup: 'l' })
@@ -101,7 +107,7 @@ function init () {
 
   // MIDI Channels for mixer channels from 8
   const drumsChannel = new MixerChannel()
-  const bassChannel = new MixerChannel({ duckAmount: 0.8 })
+  const bassChannel = new MixerChannel({ duckAmount: 0.9 })
   const leadChannel = new MixerChannel({ duckAmount: 1, highPass: 100 })
   const slicerChannel = new MixerChannel({ duckAmount: 0.8 })
   const oneshotsChannel = new MixerChannel({ duckAmount: 0.8 })
@@ -159,13 +165,13 @@ function init () {
   // Sample loader config
   const loader = new SampleLoader()
 
-  loader.register('never-forget.wav')
+  loader.register('breaks.wav')
   loader.register(drums.sampleNames)
   loader.register(oneshots.sampleNames)
 
   // assign samples after all been loaded and decoded
   loader.load().then(() => {
-    slicer.buffer = loader.getBuffer('never-forget.wav')
+    slicer.buffer = loader.getBuffer('breaks.wav')
     loader.getBuffers(drums.sampleNames).forEach((buffer, index) => {
       drums.setBuffer(index, buffer)
     })
