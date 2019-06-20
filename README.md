@@ -16,6 +16,11 @@ Written by Matt McKegg (@mmckegg) & Jan Krutisch (@halfbyte)
 
 <img width=100 src='teapot.png'/>
 
+## Action Videos
+
+- https://www.youtube.com/watch?v=yMbfu5QiS7c
+- https://www.youtube.com/watch?v=b2SJn4SWKVU
+
 ## Install / Use
 
 - use git-lfs to check out the samples
